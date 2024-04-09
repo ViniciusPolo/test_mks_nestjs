@@ -13,7 +13,7 @@ import { FindAllParameters, MovieDto, MovieRouteParameters } from './movie.dto';
 import { MovieService } from './movie.service';
 import { AuthGuard } from '../auth/auth.guard';
 import { ApiTags, ApiResponse } from '@nestjs/swagger';
-// import { RedisService } from '../redis/redis.service'; 
+import { RedisService } from '../redis/redis.service'; 
 
 
 @UseGuards(AuthGuard)
@@ -22,7 +22,7 @@ import { ApiTags, ApiResponse } from '@nestjs/swagger';
 export class MovieController {
   constructor(
     private readonly movieService: MovieService,
-    // private readonly redisService: RedisService, 
+    private readonly redisService: RedisService, 
   ) { }
   
 
@@ -36,24 +36,24 @@ export class MovieController {
   @Get('/:id')
   @ApiResponse({ status: 200, description: 'Retorna Filme Escolhido com base no id(uuid) informado' })
   async findById(@Param('id') id: string) {
-    // const cachedMovie = await this.redisService.get(id); 
-    // if (cachedMovie) {
-    //   return JSON.parse(cachedMovie);
-    // }
+    const cachedMovie = await this.redisService.get(id); 
+    if (cachedMovie) {
+      return JSON.parse(cachedMovie);
+    }
     return this.movieService.findById(id);
   }
 
   @Get()
   @ApiResponse({ status: 200, description: 'Retorna Todos os Filmes' })
   async findAll(@Query() params: FindAllParameters): Promise<MovieDto[]> {
-    // if(!params){
-    //   const cachedMovies = await this.redisService.get('allMovies'); 
-    //   if (cachedMovies) {
-    //     return JSON.parse(cachedMovies); 
-    //   }
-    // }
+    if(!params){
+      const cachedMovies = await this.redisService.get('allMovies'); 
+      if (cachedMovies) {
+        return JSON.parse(cachedMovies); 
+      }
+    }
     const movies = await this.movieService.findAll(params);
-    // await this.redisService.set('allMovies', JSON.stringify(movies), 50000); 
+    await this.redisService.set('allMovies', JSON.stringify(movies), 50000); 
     return movies;
   }
 
@@ -61,7 +61,7 @@ export class MovieController {
   @ApiResponse({ status: 200, description: 'Altera os dados Filmes' })
   async update(@Param() params: MovieRouteParameters, @Body() movie: MovieDto) {
     await this.movieService.update(params.id, movie);
-    // await this.redisService.set(params.id, JSON.stringify(movie), 50000); 
+    await this.redisService.set(params.id, JSON.stringify(movie), 50000); 
 
   }
 
@@ -69,6 +69,6 @@ export class MovieController {
   @ApiResponse({ status: 200, description: 'Deleta o Filme' })
   async remove(@Param('id') id: string): Promise<void> {
     await this.movieService.remove(id);
-    // this.redisService.delete;
+    this.redisService.delete;
   }
 }

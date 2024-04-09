@@ -13,7 +13,7 @@ import { DbModule } from './db/db.module';
     AuthModule,
     UsersModule,
     DbModule,
-    // RedisModule
+    RedisModule
   ],
   controllers: [],
   providers: [],
